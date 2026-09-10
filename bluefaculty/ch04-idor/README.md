@@ -6,7 +6,7 @@ Petit challenge sympa sur les IDOR, un classique du Top 10 OWASP mais toujours a
 
 ## Le contexte
 
-BluePortal est une appli de démo avec plusieurs comptes utilisateurs. L'énoncé donne un indice assez gros : un des comptes, `user2`, aurait un mot de passe faible, potentiellement identique à son login. Classique, mais ça reste la porte d'entrée la plus fréquente en vrai en entreprise aussi — les mots de passe par défaut jamais changés, c'est un grand classique des audits.
+BluePortal est une appli de démo avec plusieurs comptes utilisateurs. L'énoncé donne un indice assez gros : un des comptes, `user2`, aurait un mot de passe faible, potentiellement identique à son login. Classique, mais ça reste la porte d'entrée la plus fréquente en vrai en entreprise aussi, les mots de passe par défaut jamais changés, c'est un grand classique des audits.
 
 ## Premier accès
 
@@ -21,7 +21,7 @@ password: user2
 
 ## Repérer le paramètre
 
-Une fois dedans, je regarde la page de profil. Il y a un paramètre `id` qui traîne dans la requête — `id=2`. Rien d'exotique, c'est le genre de truc qu'on croise sur 90% des applis qui gèrent des comptes utilisateurs. Le réflexe à avoir dès qu'on voit un identifiant numérique comme ça : est-ce que le serveur vérifie vraiment que je suis autorisé à demander CET id précis, ou est-ce qu'il fait juste "ok tu veux l'id X, tiens voilà les données de l'id X" sans se poser de questions ?
+Une fois dedans, je regarde la page de profil. Il y a un paramètre `id` qui traîne dans la requête : `id=2`. Rien d'exotique, c'est le genre de truc qu'on croise sur 90% des applis qui gèrent des comptes utilisateurs. Le réflexe à avoir dès qu'on voit un identifiant numérique comme ça : est-ce que le serveur vérifie vraiment que je suis autorisé à demander CET id précis, ou est-ce qu'il fait juste "ok tu veux l'id X, tiens voilà les données de l'id X" sans se poser de questions ?
 
 Un seul moyen de savoir : tester.
 
@@ -29,7 +29,7 @@ Un seul moyen de savoir : tester.
 
 Je change `id=2` en `id=1`, comme ça, à la main dans l'URL.
 
-Et là, ça passe. Le serveur me renvoie le profil complet du compte `admin` — alors que ma session est toujours celle de `user2` (c'est écrit noir sur blanc dans la page : "Viewer: user2"). Ça confirme exactement ce qu'on soupçonnait : l'app fait confiance à l'id fourni par le client, point. Pas de vérification "est-ce que l'utilisateur en session a le droit de voir CE profil".
+Et là, ça passe. Le serveur me renvoie le profil complet du compte `admin`, alors que ma session est toujours celle de `user2` (c'est écrit noir sur blanc dans la page : "Viewer: user2"). Ça confirme exactement ce qu'on soupçonnait : l'app fait confiance à l'id fourni par le client, point. Pas de vérification "est-ce que l'utilisateur en session a le droit de voir CE profil".
 
 ![Profil admin accessible via IDOR (session user2)](images/02-admin-via-idor.png)
 
@@ -61,7 +61,7 @@ Cette vérification manque, et c'est tout ce qu'il faut pour qu'un utilisateur l
 
 ## Ce que je retiens
 
-Deux petites faiblesses combinées ici : un mot de passe trivial pour rentrer, et un contrôle d'accès absent une fois dedans. Prises séparément, chacune semble presque anecdotique — ensemble, ça donne un accès admin complet en trente secondes sans le moindre outil.
+Deux petites faiblesses combinées ici : un mot de passe trivial pour rentrer, et un contrôle d'accès absent une fois dedans. Prises séparément, chacune semble presque anecdotique. Ensemble, ça donne un accès admin complet en trente secondes sans le moindre outil.
 
 Le réflexe à garder pour la suite : dès que je vois un `id`, `uid`, `user_id`, `account_id` ou équivalent dans une requête, je teste systématiquement l'incrémentation/décrémentation avant de passer à autre chose. C'est souvent le test le plus rapide à faire et il paie régulièrement, y compris sur des applis censées être "sérieuses".
 
@@ -75,4 +75,4 @@ Le réflexe à garder pour la suite : dès que je vois un `id`, `uid`, `user_id`
 
 ---
 
-*Outils : navigateur uniquement, modification manuelle du paramètre d'URL — pas besoin de Burp pour celui-là.*
+*Outils : navigateur uniquement, modification manuelle du paramètre d'URL, pas besoin de Burp pour celui-là.*

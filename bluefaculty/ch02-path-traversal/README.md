@@ -4,7 +4,7 @@ Deuxième challenge de la série OWASP Top 10 chez BlueFaculty, cette fois sur u
 
 ## Le contexte
 
-L'appli s'appelle "File Viewer" — une démo minimaliste qui affiche le contenu de fichiers via un paramètre dans l'URL :
+L'appli s'appelle FFile ViewerF : une démo minimaliste qui affiche le contenu de fichiers via un paramètre dans l'URL :
 
 ```
 /preview?path=public.txt

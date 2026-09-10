@@ -65,7 +65,13 @@ Deux petites faiblesses combinées ici : un mot de passe trivial pour rentrer, e
 
 Le réflexe à garder pour la suite : dès que je vois un `id`, `uid`, `user_id`, `account_id` ou équivalent dans une requête, je teste systématiquement l'incrémentation/décrémentation avant de passer à autre chose. C'est souvent le test le plus rapide à faire et il paie régulièrement, y compris sur des applis censées être "sérieuses".
 
-Côté remédiation, rien de sorcier : vérifier l'autorisation à chaque requête plutôt que de se reposer sur le fait que l'utilisateur "ne devrait pas" deviner l'id de quelqu'un d'autre, et si possible éviter les ids séquentiels prévisibles au profit d'UUID.
+## Comment se protéger
+
+- **Contrôle d'accès côté serveur, à chaque requête** : ne jamais se fier à un `id` fourni par le client. Vérifier que la session a bien le droit de lire / modifier *cet* objet précis (ownership ou rôle), sinon renvoyer `403`.
+- **Ne pas s'appuyer sur l'obscurité des IDs** : même avec des UUID, l'autorisation reste obligatoire. Les IDs séquentiels facilitent juste la découverte ; ce n'est pas la cause racine.
+- **Mots de passe solides + politique minimale** : interdire les mots de passe égaux au login, imposer une longueur / complexité raisonnable, et limiter les tentatives (rate limiting / lockout).
+- **Tests automatisés d'accès** : écrire des tests qui vérifient qu'un user A ne peut pas accéder aux ressources de user B (et encore moins à celles d'un admin).
+- **Principe du moindre privilège** : ne renvoyer dans les réponses que les champs nécessaires ; un profil "admin" ne devrait pas exposer un secret / flag à un viewer non autorisé.
 
 ---
 

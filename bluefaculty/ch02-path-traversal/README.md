@@ -62,11 +62,16 @@ Le `../` est un opérateur système standard (remonter d'un niveau dans l'arbore
 
 ## Ce que je retiens
 
-Le réflexe à avoir dès qu'un paramètre ressemble de près ou de loin à un chemin de fichier, un nom de fichier ou une référence à une ressource statique : tester une remontée de répertoire basique avant toute chose. `../../../etc/passwd` reste le test de référence sous Linux pour confirmer rapidement qu'une appli est vulnérable, `flag.txt` ou tout autre fichier connu du contexte fait aussi très bien l'affaire.
+Le réflexe à avoir dès qu'un paramètre ressemble de près ou de loin à un chemin de fichier, un nom de fichier ou une référence à une ressource statique : tester une remontée de répertoire basique avant toute chose. Sur ce challenge il n'y avait aucune protection : pas de normalisation du chemin, pas de whitelist de fichiers autorisés, pas de sandbox.
 
-Sur ce challenge il n'y avait aucune protection : pas de normalisation du chemin, pas de whitelist de fichiers autorisés, pas de sandbox. En vrai, même une appli qui filtre `../` peut parfois être contournée avec de l'encodage (`%2e%2e%2f`) ou des variantes — mais ici la faille est directe, aucun contournement nécessaire.
+## Comment se protéger
 
-Côté remédiation : ne jamais faire confiance à un chemin fourni par l'utilisateur. Soit on résout le chemin final et on vérifie qu'il reste bien sous le dossier autorisé (`realpath` + comparaison de préfixe), soit encore mieux, on ne travaille jamais avec des noms de fichiers arbitraires côté client — on utilise un identifiant qui pointe vers une liste de fichiers autorisés côté serveur.
+- **Ne jamais concaténer un chemin utilisateur tel quel** : traiter l'entrée comme un identifiant (ID, slug), pas comme un chemin filesystem libre.
+- **Whitelist de fichiers autorisés** : mapper un ID côté serveur vers une liste fixe de ressources ; refuser tout le reste.
+- **Normaliser puis vérifier le préfixe** : si un chemin relatif est inévitable, résoudre le chemin final (`realpath` / équivalent) et contrôler qu'il reste sous le dossier autorisé avant toute lecture.
+- **Ne pas se contenter d'un filtre `../`** : un simple remplacement de chaîne est trop fragile (encodages, variantes). La vérification après résolution du chemin est plus fiable.
+- **Droits OS du process** : faire tourner l'appli avec un compte à privilèges minimaux, et ne pas placer de secrets / flags hors du périmètre prévu (ou mieux : hors du disque accessible à l'appli).
+- **Tests** : ajouter des cas qui tentent de sortir du dossier autorisé et attendent un refus (`400` / `403` / `404`), pas le contenu du fichier.
 
 ---
 
